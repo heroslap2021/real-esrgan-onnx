@@ -37,11 +37,11 @@ h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 n_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))    
 fps = video.get(cv2.CAP_PROP_FPS)
 
-
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 if opt.audio:
-    writer = cv2.VideoWriter('temp.mp4',cv2.VideoWriter_fourcc('m','p','4','v'), fps, (w, h))
+    writer = cv2.VideoWriter('temp.mp4',fourcc, fps, (w, h))
 else:
-    writer = cv2.VideoWriter(opt.result,cv2.VideoWriter_fourcc('m','p','4','v'), fps, (w, h))
+    writer = cv2.VideoWriter(opt.result,fourcc, fps, (w, h))
 
 
 for frame_idx in tqdm(range(n_frames)):
@@ -63,6 +63,10 @@ for frame_idx in tqdm(range(n_frames)):
     # if k == 27:
     #     writer.release()
     #     break
+
+video.release()
+writer.release()
+cv2.destroyAllWindows()
 
 if opt.audio:
     # lossless remuxing audio/video - make sure source has audio!!
