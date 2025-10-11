@@ -5,7 +5,7 @@ import numpy as np
 import subprocess
 import platform
 
-#import ffmpeg
+# from concurrent.futures import ThreadPoolExecutor
 
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -13,14 +13,22 @@ from tqdm import tqdm
 import onnxruntime as rt
 rt.set_default_logger_severity(3)
 
+# try:
+#     import ffmpeg
+# except ImportError:
+#     import pip
+#     pip.main(['install', '--user', 'ffmpeg-python'])
+#     import ffmpeg
+
 parser = ArgumentParser()
 parser.add_argument("--source", help="path to source video")
 parser.add_argument("--result", help="path to result video")
 parser.add_argument("--audio", default=False, action="store_true", help="Keep audio")
+parser.add_argument("--model", default='RealESRGAN_x2_fp16', help="model name")
 opt = parser.parse_args()
 
 from RealEsrganONNX.esrganONNX import RealESRGAN_ONNX
-enhancer = RealESRGAN_ONNX(model_path="RealEsrganONNX/RealESRGAN_x2_fp16.onnx", device="cuda")
+enhancer = RealESRGAN_ONNX(model_path=f"RealEsrganONNX/{opt.model}.onnx", device="cuda")
 
 video = cv2.VideoCapture(opt.source)
 
@@ -43,18 +51,18 @@ for frame_idx in tqdm(range(n_frames)):
         break
     
     #use fp16 for faster inference
-    result = enhancer.enhance_fp16(frame)
+    result = enhancer.enhance_fp16(frame) if "fp16" in opt.model else enhancer.enhance(frame)
     #result = enhancer.enhance(frame)
     
     #resize to original input format
     #result = cv2.resize(result,(w,h))
     
     writer.write(result)
-    cv2.imshow ("Result - press ESC to stop",result)
-    k = cv2.waitKey(1)
-    if k == 27:
-        writer.release()
-        break
+    # cv2.imshow ("Result - press ESC to stop",result)
+    # k = cv2.waitKey(1)
+    # if k == 27:
+    #     writer.release()
+    #     break
 
 if opt.audio:
     # lossless remuxing audio/video - make sure source has audio!!
