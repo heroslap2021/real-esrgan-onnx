@@ -7,10 +7,13 @@ import numpy as np
 class RealESRGAN_ONNX:
     def __init__(self, model_path="RealESRGAN_x2.onnx", device='cuda'):
         session_options = onnxruntime.SessionOptions()
+        session_options.log_severity_level = 4
+        session_options.execution_mode = onnxruntime.ExecutionMode.ORT_SEQUENTIAL
         session_options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
         providers = ["CPUExecutionProvider"]
         if device == 'cuda':
-            providers = [("CUDAExecutionProvider", {"cudnn_conv_algo_search": "DEFAULT"}),"CPUExecutionProvider"]
+            # providers = [("CUDAExecutionProvider", {"cudnn_conv_algo_search": "DEFAULT"}),"CPUExecutionProvider"]
+            providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
         self.session = onnxruntime.InferenceSession(model_path, sess_options=session_options, providers=providers)
         
     def enhance(self, img):
