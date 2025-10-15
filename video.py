@@ -80,6 +80,8 @@ process.communicate()
 if process.returncode != 0:
     print(f"Error: Failed to extract video.")
     sys.exit(1)
+else:
+    print("Success extracting frames to folder")
 
 fp16 = True if "fp16" in opt.model else False
 
@@ -89,13 +91,10 @@ def upsampler_idx(idx):
     output = enhancer.enhance_fp16(frame) if fp16 else enhancer.enhance(frame)
     cv2.imwrite(img_path, output)
 
-with ThreadPoolExecutor(max_workers=24) as executor:
+with ThreadPoolExecutor(max_workers=2) as executor:
     with tqdm(total=n_frames, desc="[ Processing ]", ncols=70, colour="green") as pbar:
-        xy = 1
         for _ in executor.map(upsampler_idx, range(1,n_frames+1)):
             pbar.update(1)
-            progress((xy/n_frames), desc="Processing")
-            xy += 1
 
 video.release()
 cv2.destroyAllWindows()
